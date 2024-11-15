@@ -1,0 +1,28 @@
+version: "3.7"
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: test-image
+    container_name: test-container
+    volumes:
+      - ./:/var/www
+    ports:
+     - 8000:8000
+    networks:
+      - test_network
+
+  db:
+    image: mysql
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+     - 3307:3306
+    networks:
+      - test_network
+
+networks:
+  test_network:
+    driver: bridge
