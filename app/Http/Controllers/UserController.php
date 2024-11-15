@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -25,6 +26,7 @@ class UserController extends Controller
             ],500);
         }
     }
+    
     public function update(Request $request,){
         try{
             $user = User::findOrfail(auth()->user()->id);
@@ -40,6 +42,13 @@ class UserController extends Controller
                     "email" => $request->email,
                     "name" => $request->name,
                 ]);
+
+                $employee = Employee::where('user_id', $user->id)->update([
+                    "address" => $request->address,
+                    "name" => $request->name,
+                    'user_id' => $user->id,
+                    "department_id" => $request->department_id
+                ]);
             } else{
                 if($request->password !== $request->password_confirmation){
                     return response()->json([
@@ -52,6 +61,13 @@ class UserController extends Controller
                     "email" => $request->email,
                     "name" => $request->name,
                     "password" => Hash::make($request->password)
+                ]);
+
+                $employee = Employee::where('user_id', $user->id)->update([
+                    "address" => $request->address,
+                    "name" => $request->name,
+                    'user_id' => $user->id,
+                    "department_id" => $request->department_id
                 ]);
             }
             $user->save();
