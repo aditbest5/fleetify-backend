@@ -48,49 +48,71 @@ class AttendanceController extends Controller
         }
     }
 
-    public function absent_in(Request $request){
-        try{
+    public function absent_in(Request $request)
+    {
+        try {
             $request->validate([
                 "clock_in" => "required",
-                "date_attendance"=>"required"
+                "date_attendance" => "required|date",
             ]);
+    
             DB::beginTransaction();
+    
+            // Cari karyawan berdasarkan user yang sedang login
             $employee = Employee::where("user_id", auth()->user()->id)->first();
-
+    
             if (!$employee) {
                 return response()->json([
                     "response_code" => "404",
-                    "response_message" => "Data karyawan tidak temukan",
+                    "response_message" => "Data karyawan tidak ditemukan",
                 ], 404);
             }
+    
+            // Cek apakah sudah ada absensi masuk pada tanggal yang sama
+            $existingAttendance = Attendance::where('employee_id', $employee->id)
+                ->whereDate('clock_in', \Carbon\Carbon::parse($request->date_attendance)->format('Y-m-d'))
+                ->exists();
+    
+            if ($existingAttendance) {
+                return response()->json([
+                    "response_code" => "400",
+                    "response_message" => "Anda sudah melakukan absen masuk pada tanggal ini.",
+                ], 400);
+            }
+    
+            // Tentukan deskripsi (Tepat Waktu atau Terlambat)
             $clock_in_time = \Carbon\Carbon::parse($request->clock_in)->format('H:i:s');
-
             $description = $clock_in_time > $employee->department->max_clock_in_time
-            ? "Terlambat"
-            : "Tepat Waktu";
-
+                ? "Terlambat"
+                : "Tepat Waktu";
+    
+            // Buat data absensi
             $attendance = Attendance::create([
-                    "employee_id" => $employee->id,
-                    "clock_in" => $request->clock_in,
+                "employee_id" => $employee->id,
+                "clock_in" => $request->clock_in,
             ]);
-
+    
+            // Buat riwayat absensi
             $attendance_history = AttendanceHistory::create([
-                    "employee_id" => $employee->id,
-                    "attendance_id"=>$attendance->id,
-                    "date_attendance"=>$request->date_attendance,
-                    "description"=> $description
+                "employee_id" => $employee->id,
+                "attendance_id" => $attendance->id,
+                "attendance_type" => 1, // 1 untuk absen masuk
+                "date_attendance" => $request->date_attendance,
+                "description" => $description,
             ]);
-
-
+    
             DB::commit();
-
+    
             return response()->json([
                 "response_code" => "200",
                 "response_message" => "Berhasil Absen In!",
-                "data" => ["attendance"=> $attendance, "attendance_history"=> $attendance_history]
+                "data" => [
+                    "attendance" => $attendance,
+                    "attendance_history" => $attendance_history,
+                ],
             ], 201);
-
-        } catch(\Throwable $th){
+    
+        } catch (\Throwable $th) {
             DB::rollBack();
             return response()->json([
                 "response_code" => "500",
@@ -99,6 +121,7 @@ class AttendanceController extends Controller
             ], 500);
         }
     }
+    
 
     public function absent_out(Request $request)
     {
@@ -128,7 +151,7 @@ class AttendanceController extends Controller
                 ? "Pulang Sebelum Waktunya"
                 : "Tepat Waktu";
 
-            // Cari attendance yang sesuai dengan employee_id dan tanggal clock_in yang sama dengan date_attendance
+            // Mencari attendance yang sesuai dengan employee_id dan tanggal clock_in yang sama dengan date_attendance
             $attendance = Attendance::where('employee_id', $employee->id)
                 ->whereDate('clock_in', \Carbon\Carbon::parse($request->date_attendance)->format('Y-m-d'))  // Memastikan tanggal clock_in sesuai dengan date_attendance
                 ->first(); // Ambil satu record attendance yang pertama
@@ -141,7 +164,7 @@ class AttendanceController extends Controller
             } else if($attendance->clock_out){
                 return response()->json([
                     "response_code" => "404",
-                    "response_message" => "Anda sudah absent out",
+                    "response_message" => "Anda sudah melakukan absen pulang",
                 ], 404);
             }
 
