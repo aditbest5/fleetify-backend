@@ -120,7 +120,7 @@ class DepartmentController extends Controller
         try{
             Department::destroy($id);
             return response()->json([
-                'response_code' => "00",
+                'response_code' => "200",
                 'response_message' => 'Berhasil delete id:' . ' ' . $id
             ]);
         } catch(\Throwable $th){

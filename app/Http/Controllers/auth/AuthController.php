@@ -111,4 +111,37 @@ class AuthController extends Controller
             ], 500);
         }
     }
+
+    public function change_password(Request $request, $id)
+    {
+        try {
+            $request->validate([
+                "password" => "required|min:6",
+                'new_password' => "required|min:6"
+            ]);
+            DB::beginTransaction();
+            $user= User::findOrfail($id);
+            if (!Hash::check($request->password, $user->password)) {
+                return response()->json([
+                    "response_code" => "401",
+                    "response_message" => "Password lama tidak sesuai!",
+                ], 401);
+            }
+            $user->update([
+                "password"=>Hash::make($request->new_password)
+            ]);
+
+            DB::commit();
+            return response()->json([
+                "response_code" => "200",
+                "response_message" => "Berhasil Ubah Password!",
+            ], 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json([
+                "response_code" => "500",
+                "response_message" => $th->getMessage(),
+            ], 500);
+        }
+    }
 }

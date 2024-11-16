@@ -45,17 +45,18 @@ Route::group([
     Route::get("list", [EmployeeController::class, "index"]);
     Route::get("list/{id}", [EmployeeController::class, "show"]);
     Route::post("create", [EmployeeController::class, "store"])->middleware('admin');
-    Route::patch("update/{id}", [EmployeeController::class, "update"])->middleware('admin');
+    Route::patch("update/{id}", [EmployeeController::class, "update"]);
     Route::delete("delete/{id}", [EmployeeController::class, "destroy"])->middleware('admin');
 });
+Route::patch("user-password/update/{id}", [AuthController::class, "change_password"])->middleware('auth.jwt');
 Route::get("get-profile", [UserController::class, "show"])->middleware('auth.jwt');
 Route::patch("update-profile", [UserController::class, "update"])->middleware('auth.jwt');
 Route::group([
     "prefix"=> "department",
     'middleware' => 'auth.jwt'
 ], function(){
-    Route::get("/", [DepartmentController::class, "index"])->middleware('admin');
-    Route::get("/{id}", [DepartmentController::class, "show"])->middleware('admin');
+    Route::get("/", [DepartmentController::class, "index"]);
+    Route::get("/{id}", [DepartmentController::class, "show"]);
     Route::post("create", [DepartmentController::class, "store"])->middleware('admin');
     Route::patch("update/{id}", [DepartmentController::class, "update"])->middleware('admin');
     Route::delete("delete/{id}", [DepartmentController::class, "destroy"])->middleware('admin');
@@ -66,6 +67,7 @@ Route::group([
     'middleware' => 'auth.jwt'
 ], function(){
     Route::get("/", [AttendanceController::class, "index"])->middleware('admin');
+    Route::get("/{id}", [AttendanceController::class, "show"]);
     Route::post("absent_in", [AttendanceController::class, "absent_in"]);
     Route::post("absent_out", [AttendanceController::class, "absent_out"]);
 });
@@ -76,4 +78,6 @@ Route::group([
     'middleware' => 'auth.jwt'
 ], function(){
     Route::get("/", [AttendanceHistoryController::class, "index"])->middleware('admin');
+    Route::get("/{id}", [AttendanceHistoryController::class, "show"]);
+
 });

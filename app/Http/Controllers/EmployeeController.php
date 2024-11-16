@@ -15,7 +15,8 @@ class EmployeeController extends Controller
     public function index(){
         try{
             $employees = Employee::join('users', 'employees.user_id', '=', 'users.id')
-            ->select('employees.*', 'employees.id as employee_id','users.id as id', 'users.email') // Pilih kolom yang diperlukan
+            ->join('departments', 'employees.department_id', '=', 'departments.id')
+            ->select('employees.*', 'departments.department_name', 'employees.id as employee_id','users.id as id', 'users.email') // Pilih kolom yang diperlukan
             ->get();
             return response()->json([
                 "response_code"=>"200",
@@ -131,7 +132,7 @@ class EmployeeController extends Controller
         try{
             User::destroy($id);
             return response()->json([
-                'response_code' => "00",
+                'response_code' => "200",
                 'response_message' => 'Berhasil delete id:' . ' ' . $id
             ]);
         } catch(\Throwable $th){

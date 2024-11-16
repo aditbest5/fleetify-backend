@@ -29,6 +29,25 @@ class AttendanceController extends Controller
         }
     }
 
+    public function show($id){
+        try{
+            $attendances = Attendance::join('employees', 'attendances.employee_id', '=', 'employees.id')
+            ->where('employees.user_id', $id)
+            ->select('employees.*', 'attendances.*') // Pilih kolom yang diperlukan
+            ->get();
+            return response()->json([
+                "response_code"=>"200",
+                "response_message"=> "Berhasil mendapatkan data absensi karyawan!",
+                "data" =>$attendances
+            ],200);
+        }catch(\Throwable $th){
+            return response()->json([
+                "response_code"=>"500",
+                "response_message"=> $th->getMessage(),
+            ],500);
+        }
+    }
+
     public function absent_in(Request $request){
         try{
             $request->validate([
