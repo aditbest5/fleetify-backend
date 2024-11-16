@@ -49,8 +49,8 @@ Route::group([
     Route::delete("delete/{id}", [EmployeeController::class, "destroy"])->middleware('admin');
 });
 Route::patch("user-password/update/{id}", [AuthController::class, "change_password"])->middleware('auth.jwt');
-Route::get("get-profile", [UserController::class, "show"])->middleware('auth.jwt');
-Route::patch("update-profile", [UserController::class, "update"])->middleware('auth.jwt');
+// Route::get("get-profile", [UserController::class, "show"])->middleware('auth.jwt');
+// Route::patch("update-profile", [UserController::class, "update"])->middleware('auth.jwt');
 Route::group([
     "prefix"=> "department",
     'middleware' => 'auth.jwt'
